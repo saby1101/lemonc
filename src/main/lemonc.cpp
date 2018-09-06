@@ -51,36 +51,36 @@ template <typename T> inline T &deref(void *ptr) { return *((T *)ptr); }
     deref<G::ArcMap<T>>(mapPtr)[deref<G::Arc>(arcPtr)] = value;                \
   }
 
-#define MIN_COST_FLOW(ALG, G, I, name)                                         \
+#define MIN_COST_FLOW(ALG, G, V, C, name)                                      \
   void *name##_construct(void *graphPtr) {                                     \
-    return new ALG<G, I>(deref<G>(graphPtr));                                  \
+    return new ALG<G, V, C>(deref<G>(graphPtr));                               \
   }                                                                            \
-  void name##_destruct(void *ptr) { delete (ALG<G, I> *)ptr; }                 \
+  void name##_destruct(void *ptr) { delete (ALG<G, V, C> *)ptr; }              \
   void name##_setCostMap(void *algoPtr, void *mapPtr) {                        \
-    deref<ALG<G, I>>(algoPtr).costMap(deref<G::ArcMap<I>>(mapPtr));            \
+    deref<ALG<G, V, C>>(algoPtr).costMap(deref<G::ArcMap<C>>(mapPtr));         \
   }                                                                            \
   void name##_setLowerMap(void *algoPtr, void *mapPtr) {                       \
-    deref<ALG<G, I>>(algoPtr).lowerMap(deref<G::ArcMap<I>>(mapPtr));           \
+    deref<ALG<G, V, C>>(algoPtr).lowerMap(deref<G::ArcMap<V>>(mapPtr));        \
   }                                                                            \
   void name##_setUpperMap(void *algoPtr, void *mapPtr) {                       \
-    deref<ALG<G, I>>(algoPtr).upperMap(deref<G::ArcMap<I>>(mapPtr));           \
+    deref<ALG<G, V, C>>(algoPtr).upperMap(deref<G::ArcMap<V>>(mapPtr));        \
   }                                                                            \
   void name##_setSupplyMap(void *algoPtr, void *mapPtr) {                      \
-    deref<ALG<G, I>>(algoPtr).supplyMap(deref<G::NodeMap<I>>(mapPtr));         \
+    deref<ALG<G, V, C>>(algoPtr).supplyMap(deref<G::NodeMap<V>>(mapPtr));      \
   }                                                                            \
   INT name##_run(void *algoPtr) {                                              \
-    auto type = deref<ALG<G, I>>(algoPtr).run();                               \
+    auto type = deref<ALG<G, V, C>>(algoPtr).run();                            \
     switch (type) {                                                            \
-    case ALG<G, I>::ProblemType::INFEASIBLE:                                   \
+    case ALG<G, V, C>::ProblemType::INFEASIBLE:                                \
       return 0;                                                                \
-    case ALG<G, I>::ProblemType::OPTIMAL:                                      \
+    case ALG<G, V, C>::ProblemType::OPTIMAL:                                   \
       return 1;                                                                \
-    case ALG<G, I>::ProblemType::UNBOUNDED:                                    \
+    case ALG<G, V, C>::ProblemType::UNBOUNDED:                                 \
       return 2;                                                                \
     }                                                                          \
   }                                                                            \
-  I name##_flow(void *algoPtr, void *arcPtr) {                                 \
-    return deref<ALG<G, I>>(algoPtr).flow(deref<G::Arc>(arcPtr));              \
+  V name##_flow(void *algoPtr, void *arcPtr) {                                 \
+    return deref<ALG<G, V, C>>(algoPtr).flow(deref<G::Arc>(arcPtr));           \
   }
 
 #define GRAPH(C, name)                                                         \
@@ -94,16 +94,20 @@ template <typename T> inline T &deref(void *ptr) { return *((T *)ptr); }
                                            deref<C::Node>(node2));             \
     return copyToHeap(arc);                                                    \
   }                                                                            \
-  NODE_MAP(C, INT, name##_NodeMap_INT)                                         \
   NODE_MAP(C, LONG, name##_NodeMap_LONG)                                       \
-  ARC_MAP(C, INT, name##_ArcMap_INT)                                           \
   ARC_MAP(C, LONG, name##_ArcMap_LONG)                                         \
-  MIN_COST_FLOW(NetworkSimplex, C, INT, name##_NetworkSimplex_INT)             \
-  MIN_COST_FLOW(NetworkSimplex, C, LONG, name##_NetworkSimplex_LONG)           \
-  MIN_COST_FLOW(CostScaling, C, INT, name##_CostScaling_INT)                   \
-  MIN_COST_FLOW(CostScaling, C, LONG, name##_CostScaling_LONG)                 \
-  MIN_COST_FLOW(CapacityScaling, C, INT, name##_CapacityScaling_INT)           \
-  MIN_COST_FLOW(CapacityScaling, C, LONG, name##_CapacityScaling_LONG)
+  ARC_MAP(C, DOUBLE, name##_ArcMap_DOUBLE)                                     \
+                                                                               \
+  MIN_COST_FLOW(NetworkSimplex, C, LONG, LONG,                                 \
+                name##_NetworkSimplex_LONG_LONG)                               \
+  MIN_COST_FLOW(NetworkSimplex, C, LONG, DOUBLE,                               \
+                name##_NetworkSimplex_LONG_DOUBLE)                             \
+  MIN_COST_FLOW(CostScaling, C, LONG, LONG, name##_CostScaling_LONG_LONG)      \
+  MIN_COST_FLOW(CostScaling, C, LONG, DOUBLE, name##_CostScaling_LONG_DOUBLE)  \
+  MIN_COST_FLOW(CapacityScaling, C, LONG, LONG,                                \
+                name##_CapacityScaling_LONG_LONG)                              \
+  MIN_COST_FLOW(CapacityScaling, C, LONG, DOUBLE,                              \
+                name##_CapacityScaling_LONG_DOUBLE)
 
 using namespace lemon;
 
