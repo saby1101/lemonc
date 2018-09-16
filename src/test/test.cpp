@@ -36,19 +36,19 @@ extern "C" void deleteObject(void *ptr);
   void G##_NodeMap_LONG_set(void *mapPtr, void *nodePtr, LONG value);          \
   void *G##_ArcMap_LONG_construct(void *graphPtr);                             \
   void G##_ArcMap_LONG_destruct(void *ptr);                                    \
-  LONG G##_ArcMap_LONG_get(void *mapPtr, void *nodePtr);                       \
-  void G##_ArcMap_LONG_set(void *mapPtr, void *nodePtr, LONG value);           \
+  LONG G##_ArcMap_LONG_get(void *mapPtr, void *arcPtr);                        \
+  void G##_ArcMap_LONG_set(void *mapPtr, void *arcPtr, LONG value);            \
   void *G##_ArcMap_DOUBLE_construct(void *graphPtr);                           \
   void G##_ArcMap_DOUBLE_destruct(void *ptr);                                  \
-  DOUBLE G##_ArcMap_DOUBLE_get(void *mapPtr, void *nodePtr);                   \
-  void G##_ArcMap_DOUBLE_set(void *mapPtr, void *nodePtr, DOUBLE value);       \
+  DOUBLE G##_ArcMap_DOUBLE_get(void *mapPtr, void *arcPtr);                    \
+  void G##_ArcMap_DOUBLE_set(void *mapPtr, void *arcPtr, DOUBLE value);        \
   void *G##_##MCF##_LONG_DOUBLE_construct(void *graphPtr);                     \
   void G##_##MCF##_LONG_DOUBLE_destruct(void *ptr);                            \
   void G##_##MCF##_LONG_DOUBLE_setCostMap(void *algoPtr, void *mapPtr);        \
   void G##_##MCF##_LONG_DOUBLE_setLowerMap(void *algoPtr, void *mapPtr);       \
   void G##_##MCF##_LONG_DOUBLE_setUpperMap(void *algoPtr, void *mapPtr);       \
   void G##_##MCF##_LONG_DOUBLE_setSupplyMap(void *algoPtr, void *mapPtr);      \
-  INT G##_##MCF##_LONG_DOUBLE_run(void *algoPtr);                              \
+  int G##_##MCF##_LONG_DOUBLE_run(void *algoPtr);                              \
   LONG G##_##MCF##_LONG_DOUBLE_flow(void *algoPtr, void *arcPtr);              \
   }                                                                            \
   void name##_test() {                                                         \
@@ -85,19 +85,19 @@ extern "C" void deleteObject(void *ptr);
     assert(std::abs(a1 - 10.5) < 1e-10);                                       \
     assert(std::abs(a2 - 20.0) < 1e-10);                                       \
                                                                                \
-    void *simplexAlgo = G##_##MCF##_LONG_DOUBLE_construct(graphPtr);           \
-    G##_##MCF##_LONG_DOUBLE_setCostMap(simplexAlgo, costMap);                  \
-    G##_##MCF##_LONG_DOUBLE_setSupplyMap(simplexAlgo, supplyMap);              \
-    G##_##MCF##_LONG_DOUBLE_setUpperMap(simplexAlgo, upperMap);                \
-    INT result = G##_##MCF##_LONG_DOUBLE_run(simplexAlgo);                     \
+    void *algo = G##_##MCF##_LONG_DOUBLE_construct(graphPtr);                  \
+    G##_##MCF##_LONG_DOUBLE_setCostMap(algo, costMap);                         \
+    G##_##MCF##_LONG_DOUBLE_setSupplyMap(algo, supplyMap);                     \
+    G##_##MCF##_LONG_DOUBLE_setUpperMap(algo, upperMap);                       \
+    int result = G##_##MCF##_LONG_DOUBLE_run(algo);                            \
     assert(result == 1);                                                       \
                                                                                \
-    LONG flow1 = G##_##MCF##_LONG_DOUBLE_flow(simplexAlgo, arc1);              \
-    LONG flow2 = G##_##MCF##_LONG_DOUBLE_flow(simplexAlgo, arc2);              \
+    LONG flow1 = G##_##MCF##_LONG_DOUBLE_flow(algo, arc1);                     \
+    LONG flow2 = G##_##MCF##_LONG_DOUBLE_flow(algo, arc2);                     \
     assert(flow1 == 1);                                                        \
     assert(flow2 == 3);                                                        \
                                                                                \
-    G##_##MCF##_LONG_DOUBLE_destruct(simplexAlgo);                             \
+    G##_##MCF##_LONG_DOUBLE_destruct(algo);                                    \
                                                                                \
     G##_NodeMap_LONG_destruct(supplyMap);                                      \
     G##_ArcMap_LONG_destruct(upperMap);                                        \
@@ -129,6 +129,88 @@ extern "C" void deleteObject(void *ptr);
     G##_destruct(graphPtr);                                                    \
   }
 
+extern "C" {
+void *PV_construct();
+void PV_destruct(void *ptr);
+void PV_push_back(void *ptr, int first, int second);
+void *SG_construct();
+void SG_destruct(void *ptr);
+void SG_build(void *graphPtr, int nodeCount, void *arcsPtr);
+void *SG_NodeMap_LONG_construct(void *graphPtr);
+void SG_NodeMap_LONG_destruct(void *ptr);
+LONG SG_NodeMap_LONG_get(void *mapPtr, int nodeIdx);
+void SG_NodeMap_LONG_set(void *mapPtr, int nodeIdx, LONG value);
+void *SG_ArcMap_LONG_construct(void *graphPtr);
+void SG_ArcMap_LONG_destruct(void *ptr);
+LONG SG_ArcMap_LONG_get(void *mapPtr, int arcIdx);
+void SG_ArcMap_LONG_set(void *mapPtr, int arcIdx, LONG value);
+void *SG_ArcMap_DOUBLE_construct(void *graphPtr);
+void SG_ArcMap_DOUBLE_destruct(void *ptr);
+DOUBLE SG_ArcMap_DOUBLE_get(void *mapPtr, int arcIdx);
+void SG_ArcMap_DOUBLE_set(void *mapPtr, int arcIdx, DOUBLE value);
+void *SG_CostScaling_LONG_DOUBLE_construct(void *graphPtr);
+void SG_CostScaling_LONG_DOUBLE_destruct(void *ptr);
+void SG_CostScaling_LONG_DOUBLE_setCostMap(void *algoPtr, void *mapPtr);
+void SG_CostScaling_LONG_DOUBLE_setLowerMap(void *algoPtr, void *mapPtr);
+void SG_CostScaling_LONG_DOUBLE_setUpperMap(void *algoPtr, void *mapPtr);
+void SG_CostScaling_LONG_DOUBLE_setSupplyMap(void *algoPtr, void *mapPtr);
+int SG_CostScaling_LONG_DOUBLE_run(void *algoPtr);
+LONG SG_CostScaling_LONG_DOUBLE_flow(void *algoPtr, int arcIdx);
+}
+void SG_CostScaling_test() {
+  PROFILE_BLOCK("SG_CostScaling");
+  void *graphPtr = SG_construct();
+
+  void *arcs = PV_construct();
+  PV_push_back(arcs, 0, 1);
+  PV_push_back(arcs, 1, 2);
+
+  SG_build(graphPtr, 3, arcs);
+  PV_destruct(arcs);
+
+  void *supplyMap = SG_NodeMap_LONG_construct(graphPtr);
+
+  SG_NodeMap_LONG_set(supplyMap, 0, 1);
+  SG_NodeMap_LONG_set(supplyMap, 1, 2);
+  SG_NodeMap_LONG_set(supplyMap, 2, -3);
+
+  assert(SG_NodeMap_LONG_get(supplyMap, 0) == 1);
+  assert(SG_NodeMap_LONG_get(supplyMap, 1) == 2);
+  assert(SG_NodeMap_LONG_get(supplyMap, 2) == -3);
+
+  void *upperMap = SG_ArcMap_LONG_construct(graphPtr);
+  SG_ArcMap_LONG_set(upperMap, 0, 1);
+  SG_ArcMap_LONG_set(upperMap, 1, 3);
+
+  void *costMap = SG_ArcMap_DOUBLE_construct(graphPtr);
+  SG_ArcMap_DOUBLE_set(costMap, 0, 10.5);
+  SG_ArcMap_DOUBLE_set(costMap, 1, 20.0);
+
+  auto a1 = SG_ArcMap_DOUBLE_get(costMap, 0);
+  auto a2 = SG_ArcMap_DOUBLE_get(costMap, 1);
+  assert(std::abs(a1 - 10.5) < 1e-10);
+  assert(std::abs(a2 - 20.0) < 1e-10);
+
+  void *algo = SG_CostScaling_LONG_DOUBLE_construct(graphPtr);
+  SG_CostScaling_LONG_DOUBLE_setCostMap(algo, costMap);
+  SG_CostScaling_LONG_DOUBLE_setSupplyMap(algo, supplyMap);
+  SG_CostScaling_LONG_DOUBLE_setUpperMap(algo, upperMap);
+  int result = SG_CostScaling_LONG_DOUBLE_run(algo);
+  assert(result == 1);
+
+  LONG flow1 = SG_CostScaling_LONG_DOUBLE_flow(algo, 0);
+  LONG flow2 = SG_CostScaling_LONG_DOUBLE_flow(algo, 1);
+  assert(flow1 == 1);
+  assert(flow2 == 3);
+
+  SG_CostScaling_LONG_DOUBLE_destruct(algo);
+
+  SG_NodeMap_LONG_destruct(supplyMap);
+  SG_ArcMap_LONG_destruct(upperMap);
+  SG_ArcMap_DOUBLE_destruct(costMap);
+  SG_destruct(graphPtr);
+}
+
 TEST(SmartDigraph, NetworkSimplex, SmartDigraph_NetworkSimplex);
 TEST(ListDigraph, NetworkSimplex, ListDigraph_NetworkSimplex);
 
@@ -147,6 +229,7 @@ int main() {
   ListDigraph_CostScaling_test();
   SmartDigraph_CapacityScaling_test();
   ListDigraph_CapacityScaling_test();
+  SG_CostScaling_test();
 
   std::cout << "Tests passed succesfully!\n";
 
