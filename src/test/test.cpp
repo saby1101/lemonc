@@ -133,6 +133,9 @@ extern "C" {
 void *PV_construct();
 void PV_destruct(void *ptr);
 void PV_push_back(void *ptr, int first, int second);
+int PV_get_first(void *ptr, int idx);
+int PV_get_second(void *ptr, int idx);
+int PV_size(void *ptr);
 void *SG_construct();
 void SG_destruct(void *ptr);
 void SG_build(void *graphPtr, int nodeCount, void *arcsPtr);
@@ -163,9 +166,20 @@ void SG_CostScaling_test() {
 
   void *arcs = PV_construct();
   PV_push_back(arcs, 0, 1);
-  PV_push_back(arcs, 1, 2);
   PV_push_back(arcs, 0, 2);
   PV_push_back(arcs, 0, 3);
+  PV_push_back(arcs, 1, 2);
+
+  assert(PV_get_first(arcs, 0) == 0);
+  assert(PV_get_first(arcs, 1) == 0);
+  assert(PV_get_first(arcs, 2) == 0);
+  assert(PV_get_first(arcs, 3) == 1);
+  assert(PV_get_second(arcs, 0) == 1);
+  assert(PV_get_second(arcs, 1) == 2);
+  assert(PV_get_second(arcs, 2) == 3);
+  assert(PV_get_second(arcs, 3) == 2);
+
+  assert(PV_size(arcs) == 4);
 
   SG_build(graphPtr, 4, arcs);
   PV_destruct(arcs);
@@ -184,9 +198,9 @@ void SG_CostScaling_test() {
 
   void *upperMap = SG_ArcMap_LONG_construct(graphPtr);
   SG_ArcMap_LONG_set(upperMap, 0, 1);
-  SG_ArcMap_LONG_set(upperMap, 1, 3);
-  SG_ArcMap_LONG_set(upperMap, 2, 0);
-  SG_ArcMap_LONG_set(upperMap, 3, 2);
+  SG_ArcMap_LONG_set(upperMap, 1, 0);
+  SG_ArcMap_LONG_set(upperMap, 2, 2);
+  SG_ArcMap_LONG_set(upperMap, 3, 3);
 
   void *costMap = SG_ArcMap_DOUBLE_construct(graphPtr);
   SG_ArcMap_DOUBLE_set(costMap, 0, 10.5);
@@ -203,9 +217,7 @@ void SG_CostScaling_test() {
   assert(std::abs(a3 - 100.0) < 1e-10);
   assert(std::abs(a4 - 20.0) < 1e-10);
 
-  std::cout << "Here1!" << (long)graphPtr << std::endl;
   void *algo = SG_CostScaling_LONG_DOUBLE_construct(graphPtr);
-  std::cout << "Here!\n";
   SG_CostScaling_LONG_DOUBLE_setCostMap(algo, costMap);
   SG_CostScaling_LONG_DOUBLE_setSupplyMap(algo, supplyMap);
   SG_CostScaling_LONG_DOUBLE_setUpperMap(algo, upperMap);
@@ -218,9 +230,9 @@ void SG_CostScaling_test() {
   LONG flow3 = SG_CostScaling_LONG_DOUBLE_flow(algo, 2);
   LONG flow4 = SG_CostScaling_LONG_DOUBLE_flow(algo, 3);
   assert(flow1 == 1);
-  assert(flow2 == 3);
-  assert(flow3 == 0);
-  assert(flow4 == 2);
+  assert(flow2 == 0);
+  assert(flow3 == 2);
+  assert(flow4 == 3);
 
   SG_CostScaling_LONG_DOUBLE_destruct(algo);
 

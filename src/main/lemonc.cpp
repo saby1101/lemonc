@@ -187,10 +187,25 @@ void PV_push_back(void *ptr, int first, int second) {
   deref<PV>(ptr).push_back(std::make_pair(first, second));
 }
 
+int PV_get_first(void *ptr, int idx) {
+  auto &arcs = deref<PV>(ptr);
+  return arcs[idx].first;
+}
+
+int PV_get_second(void *ptr, int idx) {
+  auto &arcs = deref<PV>(ptr);
+  return arcs[idx].second;
+}
+
+int PV_size(void *ptr) {
+  auto &arcs = deref<PV>(ptr);
+  return (int)arcs.size();
+}
+
 CLASS(SG, SG);
 
 void SG_build(void *graphPtr, int nodeCount, void *arcsPtr) {
-  PV &arcs = deref<PV>(arcsPtr);
+  auto &arcs = deref<PV>(arcsPtr);
   deref<SG>(graphPtr).build(nodeCount, arcs.begin(), arcs.end());
 }
 
