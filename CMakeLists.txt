@@ -37,7 +37,15 @@ add_library(lemonc SHARED ${sources})
 
 target_compile_options(lemonc PUBLIC -std=c++14 -Wall)
 
-target_link_libraries(lemonc PUBLIC ${LEMON_LIBRARIES})
+if (WIN32)
+  message("WINDOWS")
+  target_link_options(lemonc PUBLIC -m64 -Wl,-allow-multiple-definition)
+  target_link_libraries(lemonc PUBLIC ${LEMON_LIBRARIES} -static gcc stdc++ winpthread -dynamic)
+else()
+  message("MAC/LINUX")
+  target_link_options(lemonc PUBLIC -m64)
+  target_link_libraries(lemonc PUBLIC ${LEMON_LIBRARIES})
+endif()
 
 add_executable(lemonc-test src/main/types.h ${sources_test})
 

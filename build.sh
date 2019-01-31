@@ -1,5 +1,6 @@
-mkdir build
+mkdir -p build
 pushd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
+# please set CMAKE_C_COMPILER and CMAKE_CXX_COMPILER to gcc/g++
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=$CMAKE_C_COMPILER -DCMAKE_CXX_COMPILER=$CMAKE_CXX_COMPILER
 make
 popd
